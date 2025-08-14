@@ -9,6 +9,12 @@ cd "$(dirname "$0")"
 echo
 echo "Start ($(basename "$0"))"
 
+run-cmd() {
+  cmd="$1"
+  echo "+ $cmd"
+  eval "$cmd"
+}
+
 echo
 echo "Install Gems"
 echo "= = ="
@@ -42,27 +48,21 @@ echo
 echo "Removing Bundler Configuration"
 echo "- - -"
 
-cmd="rm -rvf .bundle/"
-echo "$cmd"
-eval "$cmd"
+run-cmd "rm -rvf .bundle/"
 
 if [ "$reinstall_gems" != "none" ]; then
   echo
   echo "Removing Lock File"
   echo "- - -"
 
-  cmd="rm -vf Gemfile.lock"
-  echo "$cmd"
-  eval "$cmd"
+  run-cmd "rm -vf Gemfile.lock"
 
   if [ "$reinstall_gems" != "outdated" ]; then
     echo
     echo "Removing Previously Installed Gems"
     echo "- - -"
 
-    cmd="rm -rf $gems_dir"
-    echo "$cmd"
-    eval "$cmd"
+    run-cmd "rm -rf $gems_dir"
   fi
 fi
 
@@ -70,50 +70,39 @@ echo
 echo "Configuring Bundler"
 echo "- - -"
 
-cmd="bundle config set --local path $gems_dir"
-echo "$cmd"
-eval "$cmd"
+run-cmd "bundle config set --local path $gems_dir"
 
 if [ "$posture" = "operational" ]; then
-  cmd="bundle config set --local without development:test"
-  echo "$cmd"
-  eval "$cmd"
+  run-cmd "bundle config set --local without development:test"
 fi
 
 echo
 echo "Installing Bundle"
 echo "- - -"
 
-cmd="bundle add rubygems-runtime --skip-install"
-echo "$cmd"
-eval "$cmd"
+run-cmd "bundle add rubygems-runtime --skip-install"
 
-cmd="bundle install --standalone"
-echo "$cmd"
-eval "$cmd"
+run-cmd "bundle install --standalone"
 
-cmd="bundle binstubs --all --path=$gems_dir/exec --standalone"
-echo "$cmd"
-eval "$cmd"
+run-cmd "bundle binstubs --all --path=$gems_dir/exec --standalone"
 
 echo
-echo "Generating $gems_dir/lib Directory"
+echo "Generating $gems_dir/lib/"
 echo "- - -"
 
 rubygems_runtime_dir="$(bundle show rubygems-runtime)"
 
-cmd="rm -rf $gems_dir/lib && mkdir -p $gems_dir/lib/bundler"
-echo "$cmd"
-eval "$cmd"
+run-cmd "rm -rf $gems_dir/lib && mkdir -p $gems_dir/lib/bundler"
 
-cmd="cp -r $rubygems_runtime_dir/* $gems_dir"
-echo "$cmd"
-eval "$cmd"
+run-cmd "cp -r $rubygems_runtime_dir/* $gems_dir"
 
-cmd="$(cat <<'SH'
+run-cmd "$(cat <<'SH'
 sed -n \
   -e '1i\
-require "rubygems/runtime"
+lib_dir = File.expand_path("..", __dir__)\
+$:.unshift(lib_dir) unless $:.include?(lib_dir)\
+require "rubygems/runtime"\
+
 ' -e 's|\.\./|../../|' \
   -e '/$rubygems_runtime_dir/d' \
   -e '/RUBY_ENGINE/ s/^\$:.unshift/$:.push/p' \
@@ -121,16 +110,15 @@ require "rubygems/runtime"
   $gems_dir/bundler/setup.rb > $gems_dir/lib/bundler/setup.rb
 SH
 )"
-echo "$cmd"
-eval "$cmd"
 
-cmd="rm -rf $gems_dir/bundler"
-echo "$cmd"
-eval "$cmd"
+run-cmd "rm -rf $gems_dir/bundler"
 
-cmd="bundle remove rubygems-runtime"
-echo "$cmd"
-eval "$cmd"
+run-cmd "bundle remove rubygems-runtime"
+
+echo
+echo "Gem installation is complete. Verify the standalone bundle:"
+echo
+echo "    ruby --disable-rubyopt --disable-gems -I./gems/lib -rbundler/setup -e 'require \"some_installed_gem\"'"
 
 echo
 echo "Done ($(basename "$0"))"
