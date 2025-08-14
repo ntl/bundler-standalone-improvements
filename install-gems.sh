@@ -96,11 +96,39 @@ cmd="bundle binstubs --all --path=$gems_dir/exec --standalone"
 echo "$cmd"
 eval "$cmd"
 
-cmd="bundle remove rubygems-runtime"
+echo
+echo "Generating $gems_dir/lib Directory"
+echo "- - -"
+
+rubygems_runtime_dir="$(bundle show rubygems-runtime)"
+
+cmd="rm -rf $gems_dir/lib && mkdir -p $gems_dir/lib/bundler"
 echo "$cmd"
 eval "$cmd"
 
-cmd="ed -s $gems_dir/bundler/setup.rb <<< $'/rubygems-runtime/a\nrequire \"rubygems/runtime\" ## Added by $0\n.\nw'"
+cmd="cp -r $rubygems_runtime_dir/* $gems_dir"
+echo "$cmd"
+eval "$cmd"
+
+cmd="$(cat <<'SH'
+sed -n \
+  -e '1i\
+require "rubygems/runtime"
+' -e 's|\.\./|../../|' \
+  -e '/$rubygems_runtime_dir/d' \
+  -e '/RUBY_ENGINE/ s/^\$:.unshift/$:.push/p' \
+  -e '/^\$:.unshift/p' \
+  $gems_dir/bundler/setup.rb > $gems_dir/lib/bundler/setup.rb
+SH
+)"
+echo "$cmd"
+eval "$cmd"
+
+cmd="rm -rf $gems_dir/bundler"
+echo "$cmd"
+eval "$cmd"
+
+cmd="bundle remove rubygems-runtime"
 echo "$cmd"
 eval "$cmd"
 

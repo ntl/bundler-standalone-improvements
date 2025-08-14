@@ -7,4 +7,9 @@ if not libraries_dir.nil?
   end
 end
 
-require_relative 'gems/bundler/setup'
+gems_lib_dir = File.expand_path('gems/lib', __dir__)
+if not $LOAD_PATH.include?(gems_lib_dir)
+  $LOAD_PATH.unshift(gems_lib_dir)
+end
+
+require 'bundler/setup'
