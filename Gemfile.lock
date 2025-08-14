@@ -1,0 +1,37 @@
+PATH
+  remote: .
+  specs:
+    example (1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    import_constants (3.0.0.0)
+    test_bench (3.0.0.0)
+      test_bench-executable
+      test_bench-fixture
+    test_bench-executable (3.0.1.0)
+      test_bench-run
+    test_bench-fixture (3.0.0.0)
+      test_bench-output
+    test_bench-output (3.0.0.2)
+      import_constants
+      test_bench-session
+    test_bench-random (3.0.0.0)
+    test_bench-run (3.0.0.1)
+      test_bench-fixture
+    test_bench-session (3.0.2.1)
+      test_bench-telemetry
+    test_bench-telemetry (3.0.0.0)
+      test_bench-random
+
+PLATFORMS
+  arm64-darwin-24
+  ruby
+
+DEPENDENCIES
+  example!
+  test_bench
+
+BUNDLED WITH
+   2.6.9
