@@ -99,9 +99,7 @@ run-cmd "cp -r $rubygems_runtime_dir/* $gems_dir"
 run-cmd "$(cat <<'SH'
 sed -n \
   -e '1i\
-lib_dir = File.expand_path("..", __dir__)\
-$:.unshift(lib_dir) unless $:.include?(lib_dir)\
-require "rubygems/runtime"\
+require "rubygems/runtime"
 
 ' -e 's|\.\./|../../|' \
   -e '/$rubygems_runtime_dir/d' \
@@ -116,9 +114,9 @@ run-cmd "rm -rf $gems_dir/bundler"
 run-cmd "bundle remove rubygems-runtime"
 
 echo
-echo "Gem installation is complete. Verify the standalone bundle:"
+echo "Gem installation is complete. To verify an installed gem can be activated:"
 echo
-echo "    ruby --disable-rubyopt --disable-gems -I./gems/lib -rbundler/setup -e 'require \"some_installed_gem\"'"
+echo "    ruby --disable-rubyopt --disable-gems -I./$gems_dir/lib -rbundler/setup -e 'require \"some_installed_gem\"'"
 
 echo
 echo "Done ($(basename "$0"))"
